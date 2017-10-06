@@ -1,0 +1,24 @@
+\begin{thebibliography}{1}
+
+\bibitem{Cybenko1989}
+G.~Cybenko.
+\newblock Approximation by superpositions of a sigmoidal function.
+\newblock {\em Mathematics of Control, Signals and Systems}, 1989.
+
+\bibitem{Delalleau2011}
+O.~Delalleau and Y.~Bengio.
+\newblock Shallow vs. deep sum-product networks.
+\newblock In {\em NIPS}, 2011.
+
+\bibitem{Hornik1989}
+K.~Hornik, M.~Stinchcombe, and H.~White.
+\newblock Multilayer feed-forward networks are universal approximators.
+\newblock {\em Neural Networks}, 1989.
+
+\bibitem{Zaslavsky1975}
+Thomas Zaslavsky.
+\newblock Facing up to arrangements: face-count formulas for partitions of
+  space by hyperplanes.
+\newblock In {\em American Mathematical Society}, 1975.
+
+\end{thebibliography}

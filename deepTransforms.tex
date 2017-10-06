@@ -1,0 +1,181 @@
+\documentclass[runningheads,a4paper]{llncs}
+
+\input{header}
+\begin{document}
+% first the title is needed
+\title{Transforming Deep Neural Networks}
+
+\author{Srikumar Ramalingam}
+\institute{
+University of Utah\\
+%$^2$Alan Turing Institute, UK \\
+%$^3$University of Edinburgh, UK \\
+%$^4$ETH Zurich, Switzerland \\
+%$^5$University of Oxford, Oxford, UK \\
+}
+%\date{}
+\maketitle
+
+We refer to {\bf deep transformation (DT)} as a method that takes a network {\sc DNN1} and produces an equivalent network {\sc DNN2}, with possibly different number of layers and activation functions. 
+
+\begin{definition}
+We refer to {\sc DNN1} and {\sc DNN2} as equivalent networks, if for a given input $\vec{x}$, both of them produce the same output $\vec{y}$. 
+\label{def.equivalent_networks}
+\end{definition}
+
+\section{Introduction}
+
+It is well known that a single, huge, hidden layer is a universal approximator of Borel measurable functions~\cite{Hornik1989,Cybenko1989}. A recent paper shows that a shallow network requires exponentially many more hidden units than a deep sum-product network in order to compute certain families of polynomials~\cite{Delalleau2011}. 
+
+There has been many activation functions such as threshold, logistic, hyperbolic tangents, and rectified linear units (ReLUs). ReLUs are defined as $max(0,x)$ and it achieves excellent results in many computer vision problems. Many of the classical results do not apply in the case of ReLUs. We would like to specifically study the theoretical properties of neural networks that use ReLUs. 
+
+\section{Reduction of deep neural networks}
+Given a {\sc DNN1} with $L$ hidden layers with $m$ neurons in each layer as shown in Figure~\ref{fg.DNN1}, we will use a constructive algorithm to obtain an equivalent network {\sc DNN2} with only 2 hidden layers. 
+
+\begin{figure*}[!htbp]
+\begin{center}
+\psfig{figure=./figures/standard_network1,width=0.40\columnwidth}
+\end{center}
+\caption{We show a standard network {\sc DNN1} with $n$ input variables, $L$ hidden layers, and one output variable.}
+\label{fg.DNN1}
+\end{figure*}
+
+\paragraph{{\sc DNN1:}} Figure~\ref{fg.DNN1} shows the architecture for a standard DNN with $L$ hidden layers. There are $n$ input variables given by $x_1,x_2,\dots,x_n$, and one output variable $y$. Each of the hidden layer $l=\{1,2,\dots,L\}$ has $m$ hidden neurons given by $h\{_1^l,h_2^l,\dots,h_m^l\}$. The activation function used is the standard ReLU: $ReLU(x) = max(0,x)$. The hidden neurons and the output $y$ are defined as below:
+
+\begin{eqnarray*}
+h_i^{1} & = &  max(0,w^1_{i1} x_1 + w^1_{i2} x_2 + \dots w^1_{in} x_n + b^1_i) \\ 
+h_i^{l+1} & = & max(0,w^{l+1}_{i1} h^{l}_1 + w^{l+1}_{i2} h^{l}_2 + \dots w^{l+1}_{im} h^{l}_m + b^{l+1}_i) \\
+y & = & max(0,w^{L+1}_{11} h^{L}_1 + w^{L+1}_{12} h^{L}_2 + \dots w^{L+1}_{1m} h^{L}_m + b^{L+1}_1) 
+\end{eqnarray*}
+
+\begin{figure*}[!htbp]
+\begin{center}
+\mbox{
+\subfigure[]{\psfig{figure=./figures/3_layer_eg_DNN1,width=0.15\columnwidth}}
+\subfigure[]{\psfig{figure=./figures/3_layer_eg_decisiontree,width=0.60\columnwidth}}
+}
+\end{center}
+\caption{(a) We show a simple network with 3 hidden layers having two neurons each. (b) Given an input $\vec{x}$ we show the outputs from each hidden layer in the form of a decision tree. The leaves in the decision tree correspond to all possible outputs $y$ that can be obtained from the network shown in (a).}
+\label{fg.3_layer_eg}
+\end{figure*}
+
+
+\begin{figure*}[!htbp]
+\begin{center}
+\psfig{figure=./figures/3_layer_eg_DNN2,width=0.80\columnwidth}
+\end{center}
+\caption{{\sc DNN2} of Figure~\ref{fg.3_layer_eg}(a):}
+\label{fg.3_layer_eg_DNN2}
+\end{figure*}
+
+\subsection{Activation Set}
+Let us consider an input $\vec{x} = \{x_1,x_2,\dots,x_n\}$. We will assume that the network is already trained and all the weights $w^l_{ij}$'s and biases $b^l_i$'s are known. For every layer $l$ we would like to denote a set $S_l \in \{1,2,\dots,m\}$ such that if $e \in S_l$ then $h^l_e > 0$. In other words, if $h^l_e = 0$ then $e \not\in S_l$. We will refer to the set $S_l$ as the $l$-activation set. 
+
+Each of the hidden neurons $h^l_i$ depends on the values of the hidden neurons in the previous layer and the weight parameters. We will treat the weight parameters as constants since {\sc DNN1} is already trained. The hidden neuron $h^1_i$ depends on the input vector $\vec{x}$, which is also treated as a constant.
+
+\begin{equation*}
+h^l_i  =  max(0,w^{l}_{i1} h^{l-1}_1 + w^{l}_{i2} h^{l-1}_2 + \dots w^{l}_{im} h^{l-1}_m+b^{l-1}_i) 
+\end{equation*}
+
+The value of $h^l_i$ can be computed using the activations in the previous layer. By knowing the input vector $\vec{x}$ and the activation sets of all the previous layers one could find the value of $h^l_i$. In other words, we could think of $h^l_i$ as a function that depends on the activation sets of all the previous layers as shown below:
+
+\begin{equation*}
+h^l_i  =  f(S_1,\dots,S_{l-1})
+\end{equation*}
+
+We will also introduce variables to denote neurons that are not activated as shown below:
+\begin{equation*}
+\bar{h}^l_i  =  max(0,-1\times(w^{l}_{i1} h^{l-1}_1 + w^{l}_{i2} h^{l-1}_2 + \dots w^{l}_{im} h^{l-1}_m)) 
+\end{equation*}
+
+Only one of the two variables $\{h^l_i,\bar{h}^l_i\}$ can be positive. Before we show the construction of equivalent networks on a general case, we will illustrate the method on a toy example. Consider a {\sc DNN1} with $L=3,m=1,n=2$ as shown in Figure~\ref{fg.3_layer_eg}(a).
+
+\subsection{Decision tree interpretation}
+Using the concept of activation sets, we can interpret the deep neural networks as a decision tree. Given an input $\vec{x}$ we can denote the activations of various neurons in the first layer with the activation set $S_1$. In the toy example, with two neurons in the first hidden layer the activation set $S_1$ can be one of the following: $\emptyset$, $\{1\}$, $\{2\}$, and $\{1,2\}$. The second and third hidden layers also have two neurons each. Thus the activation sets $S_2$ and $S_3$ can be one of the following: $\emptyset$, $\{1\}$, $\{2\}$, and $\{1,2\}$.
+
+It is easy to see the activation sets in the form of a decision tree as shown in Figure~\ref{fg.3_layer_eg}(b). Given an input $\vec{x}$ we have four possible outputs from the first hidden layer:
+\begin{eqnarray*}
+S_1=(\emptyset):&& h^1_1 = 0,~h^1_2 = 0,\\
+S_1=(1):&& h^1_1 > 0,~h^1_2 = 0,\\
+S_1=(2):&& h^1_1 = 0,~h^1_1 > 0,\\
+S_1=(1,2):&& h^1_1 > 0,~h^1_1 > 0\\
+\end{eqnarray*} 
+From the second hidden layer, we can have 16 possible outputs from the concatenation of 4 possible values for $S_1$ and 4 possible values for $S_2$ as shown in Figure~\ref{fg.3_layer_eg}(b). We can compute the hidden neurons in the last hidden layer using $S_1$ and $S_2$. The hidden neurons in the last hidden layer can be used to compute the output $y=w_1 h^3_1 (S_1,S_2) + w_2 h^3_2 (S_1,S_2)$. 
+
+\subsection{Reduction of networks}
+Given the network in Figure~\ref{fg.3_layer_eg}(a), we will show an equivalent network with 2 hidden layers in Figure~\ref{fg.3_layer_eg_DNN2}. In Figure~\ref{fg.3_layer_eg}(a), we have $L=3$ and $m=2$. We will use only two hidden layers in the equivalent network. The number of neurons in the first layer is given below:
+
+\begin{equation}
+2m + 2m(2^m) + 2m(2^{(L-1)m}) = 2(2) + 2m(2^m) + 2m(2^{2m}) = 84
+\end{equation}
+The number of neurons in the second layer is given below:
+
+\begin{equation}
+(2^{(L-1)m})=16 
+\end{equation}
+
+Since we know the activation sets for every node in the decision tree, we can have a linear function that maps the input $\vec{x}$ to any node in the first layer. The weights between the second and third layer is designed in such a manner that we check for the conditions in the decision tree and choose an output. For example, if we choose $(\{1\},\{2\})$ then the output can be obtained using the following function:
+$y=max(0,L \bar{h}^1_1 + L h^1_2 + L h^2_1(\{1\}) + L \bar{h}^2_2(\{1\}) + w_1 h^3_1(\{1\},\{2\}) + w_2 h^3_2(\{1\},\{2\}))$
+Here $L$ is a large negative constant. 
+
+\begin{figure*}[!htbp]
+\begin{center}
+\psfig{figure=./figures/DNN2,width=0.80\columnwidth}
+\end{center}
+\caption{{\sc DNN2:} Given the {\sc DNN1} shown in Figure~\ref{fg.DNN1}, we show an equivalent network {\sc DNN2} with only 2 hidden layers.}
+\label{fg.DNN2}
+\end{figure*}
+
+\begin{theorem}
+Given a {\sc DNN1} that maps $n$ input variables to an output $y$ using $L$ hidden layers with $m$ neurons in each layer, as shown in Figure~\ref{fg.DNN1}, we can obtain an equivalent network {\sc DNN2} with only 2 hidden layers, where the first layer has $\frac{2m(1-2^{Lm})}{1-2^m}$ neurons and the second layer has $2^{mL}$ neurons as shown in Figure~\ref{fg.DNN2}
+\label{eq.deepTransformL_To_2}
+\end{theorem}
+\begin{proof}
+The proof is a constructive one. 
+
+\qed
+\end{proof}
+
+\begin{theorem}
+Given a {\sc DNN1} that maps $n$ input variables to an output $y$ using $L$ hidden layers with $m$ neurons in each layer, as shown in Figure~\ref{fg.DNN1}, we can obtain an equivalent network {\sc DNN2} with only $L-1$ hidden layers, where the $L-2$ hidden layer has $\frac{2m(1-2^{2m})}{1-2^m}$ neurons and $L-1$ hidden layer has $2^{3m}$ neurons.
+\label{eq.deepTransformL_To_L-1}
+\end{theorem}
+\begin{proof}
+Treat the $n_3$ hidden layer as the input and transform the next 3 hidden layers using Theorem~\ref{eq.deepTransformL_To_2}.
+\qed
+\end{proof}
+
+
+\section{Hyperplane arrangments}
+The neuron $h^l_i$ in the hidden layer $l$ can be thought of as an hyperplane and the different sets $S_l$ correspond to regions defined by the hyperplanes. 
+As shown by Zaslavsky~\cite{Zaslavsky1975}, a general arrangement of $n$ hyperplanes divides a space in $d$ dimensions into $\sum_{s=0}^d {n \choose 2}$ regions. As per ~\cite{Zaslavsky1975}, we can obtain equivalent network {\sc DNN2} with fewer neurons in the hidden layer. For example, in Figure~\ref{fg.3_layer_eg}(b), we will not have 4 leaves from the node $(\{\emptyset\})$. On the other hand, we will only have 1 leaf node from the node $(\{\emptyset\})$ since $\sum_{s=0}^0 {2 \choose s} = 1$. Similarly the number of leaf nodes from the node $\{1\})$ will be 3($\sum_{s=0}^1 {2 \choose s} = 3$), and not 4. As a result, we will only have 11 leaf nodes and not 16. 
+
+\section{Special Cases}
+
+\begin{theorem}
+Given a {\sc DNN1} that maps $n$ input variables to an output $y$ using $L$ hidden layers with $m$ neurons in each layer, as shown in Figure~\ref{fg.DNN1} with all positive network parameters ($w^l_i,b^l_i)$, we can obtain an equivalent network {\sc DNN2} with no hidden layers. 
+\label{eq.deepTransformL_To_0_positiveweights}
+\end{theorem}
+\begin{proof}
+When all the network parameters are positive, the activation sets are given by $S_i = \{1,2,\dots,m\},\forall i$. Since the activation sets are known and fixed, we can directly compute the output using a simple matrix transformation $y = \vec{w}^T \vec{x}$. 
+\qed
+\end{proof}
+
+\begin{theorem}
+Given a {\sc DNN1} that maps $n$ input variables to an output $y$ using $L$ hidden layers with $m$ neurons in each layer, as shown in Figure~\ref{fg.DNN1} with all negative network parameters ($w^l_i,b^l_i)$, we can obtain an equivalent network {\sc DNN2} with no hidden layers. 
+\label{eq.eq.deepTransformL_To_0_negativeweights}
+\end{theorem}
+\begin{proof}
+When all the network parameters are negative, the activation sets are given by $S_i = \{\emptyset \},\forall i$. Since the activation sets are known and fixed, we can directly compute the output using a simple matrix transformation $y = \vec{w}^T \vec{x}$. 
+\qed
+\end{proof}
+
+\section{Decompressing Networks}
+We would like to investigate scenarios where we obtain equivalent networks with additional hidden layers, while decreasing the number of neurons in each layer.
+
+{\small
+\bibliographystyle{plain}
+\bibliography{dam}
+}
+
+\end{document}
